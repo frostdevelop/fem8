@@ -1,31 +1,30 @@
 #PI Calculator (Using Leibniz Infinite Series)
 #Made by Lucas Lux
-LDA 40
-MVR 00
-LDA 03
+LDA 40 ;One (as top 2 bits)
+MVR 00 ;The int part
+LDA 03 ;Denominator (3 is first in series)
 MVR 01
 divlop:
-INC 03
+INC 03 ;Mode (add or sub)
 sublop:
-LDA 80
+LDA 80 ;One (as top one bit)
 MVR 02
 MVA 01
+DIV 02 ;Get float of frac
 INC 01
-INC 01
-DIV 02
+INC 01 ;Next number
 MVA 03
 JZO endsublop
 MVA 02
 SAR 01
-SUB 00
+SUB 00 ;Add to result
 DEC 03
 JUP sublop
-#next
 endsublop:
 MVA 02
 SAR 01
-ADD 00
-#output
+ADD 00 ;Add to result
+#output hex
 MVA 00
 SAL 02
 OUT 00
@@ -33,7 +32,7 @@ MVA 01
 MVR 02
 LDA 03
 SUB 02
-MVA 02
+MVA 02 ;Check if denom lower than zero for carry
 JPG divlop
 #Output stuff
 MVA 00
