@@ -5,8 +5,8 @@
 #CALC: 11
 #M00: X
 #M01: Y
-#M02: Remainder (Dividing)
-#M03: Remainder (temp)
+#M02: Remainder (Dividing) / Int 
+#M03: Remainder (temp) / Frac
 #ADD
 LDA E8 ;232
 MAP 00
@@ -81,4 +81,69 @@ MVA 02
 JZO endflop
 JUP fraclop
 endflop:
+MVA 01
+MAP 03
+MVA 00
+MAP 02
+LDA endfix
+MVA 00
+JUP fixout
+endfix:
 HLT
+fixout:
+#Start intout
+MVR 01
+MVR 02
+LDA 64
+DIV 01
+MVA 01
+JZO Ten
+MVR 03
+LDA 64
+MLT 03
+MVA 03
+SUB 02
+LDA 30
+ADD 01
+MVA 01
+OUT 01
+Ten:
+MVA 02
+MVR 01
+LDA 0A
+DIV 02
+MVA 02
+JZO One
+MVR 03
+LDA 0A
+MLT 03
+MVA 03
+SUB 01
+LDA 30
+ADD 02
+MVA 02
+OUT 01
+One:
+LDA 30
+ADD 01
+MVA 01
+OUT 01
+#End Intout
+MPA 03
+#Start fixedout
+MVR 01
+LDA 2E
+OUT 01
+fixedlop:
+LDA 0A
+MLT 01
+MVA 07
+MVR 02
+LDA 30
+ADD 02
+MVA 02
+OUT 01
+MVA 01
+JNZ fixedlop
+#End fixedout
+JPP 00
