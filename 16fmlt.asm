@@ -1,12 +1,36 @@
 #21.633*11.782
+LDA endint1
+MAP 05
 LDA 15
 MAP 00
+JUP intout
+endint1:
+LDA endfrac1
+MAP 04
 LDA A2
 MAP 01
+MAP 07
+JUP fixout
+endfrac1:
+LDA 2A
+OUT 01
+LDA endint2
+MAP 05
 LDA 0B
 MAP 02
+JUP intout
+endint2:
+LDA endfrac2
+MAP 04
 LDA C8
 MAP 03
+MAP 07
+JUP fixout
+endfrac2:
+LDA 3D
+OUT 01
+LDA 20
+OUT 01
 #Calc
 #.633*.782
 MPA 01
@@ -50,4 +74,76 @@ MPA 02
 MLT 00
 MVA 00
 ADD 02
+LDA fixout
+MAP 05
+LDA endfix
+MAP 04
+MVA 01
+MAP 07
+MVA 02
+JUP intout
+endfix:
 HLT
+fixout:
+MPA 07
+#Start fixedout
+MVR 01
+LDA 2E
+OUT 01
+fixedlop:
+LDA 0A
+MLT 01
+MVA 07
+MVR 02
+LDA 30
+ADD 02
+MVA 02
+OUT 01
+MVA 01
+JNZ fixedlop
+#End fixedout
+MPA 04
+MVR 00
+JPP 00
+intout:
+#Start intout
+MVR 01
+MVR 02
+LDA 64
+DIV 01
+MVA 01
+JZO Ten
+MVR 03
+LDA 64
+MLT 03
+MVA 03
+SUB 02
+LDA 30
+ADD 01
+MVA 01
+OUT 01
+Ten:
+MVA 02
+MVR 01
+LDA 0A
+DIV 02
+MVA 02
+#JZO One
+MVR 03
+LDA 0A
+MLT 03
+MVA 03
+SUB 01
+LDA 30
+ADD 02
+MVA 02
+OUT 01
+One:
+LDA 30
+ADD 01
+MVA 01
+OUT 01
+#End Intout
+MPA 05
+MVR 00
+JPP 00
