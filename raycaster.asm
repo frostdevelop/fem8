@@ -15,6 +15,9 @@
 #02 Arg 1
 #03 Arg 2
 #(Reg 03 is ret)
+#20-3F: Map
+#30: sin
+#31: cos
 #F0 X position 
 #F1 Y Position
 #F2 Directionx
@@ -25,7 +28,35 @@ LDA 04
 MAP F0
 MAP F1
 #Init map
+#00011100
+#00001100
+#00001000
+#11000000
+#11000011
+#00000011
+#11000000
+#11001100
 LDA 1C
+MAP 20
+LDA 0C
+MAP 21
+LDA 08
+MAP 22
+LDA C0
+MAP 23
+LDA C3
+MAP 24
+LDA 03
+MAP 25
+LDA C0
+MAP 26
+LDA CC
+MAP 27
+#Setup rot (all fixed point)
+LDA FE ;cos()
+MAP 31
+LDA 19 ;sin()
+MAP 30
 #Bit(00,01) Function 
 bit:
 LDA 01
