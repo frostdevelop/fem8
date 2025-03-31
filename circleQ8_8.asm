@@ -1,10 +1,5 @@
 #Angles ig
-#*Q8.8 fixed is forced due to nature of sin(1deg)
-#This program doesn't operate rom consraints. (MLT segment too large) 
-#todo:
-#Optimization
-#try subroutine format
-#try Q4.4 fixed
+#Assemble with version 1.1
 #MM:
 #00: COS
 #01: SIN
@@ -14,43 +9,30 @@
 #05: YFRAC
 #06: TEMPINT
 #07: TEMPFRAC
+#08: TEMPINT2
+#09: TEMPFRAC2
 #20: TEMPCALC
-LDA FF ;cos
-MAP 00
-LDA 04 ;sin
-MAP 01
-LDA 00 ;X
-MAP 02
+#21: TEMPCALC2
+#30: Ret
+#31: Val
+#40: Ret2
+#I tried to functionize the entire multiplication "pipeline", register movement + other overheads takes too much.
+COS = FF
+SIN = 04
+#LDA 00 ;X
+#MAP 02
 LDA 01 ;Y
 MAP 03
 #Setup BACK
-LDA 5F
-MAP FA
-LDA 01
-MAP FF
+#LDA 5F
+#MAP FA
 LDA 40
 MAP FB
-LDA 0F*
-MAP FD
-LDA 80
-MAP FE
-LDA 04
-MAP FF
-LDA 01
-MAP FF
-LDA F0
-MAP FD
-LDA 08
-MAP FE
-LDA 04
-MAP FF
-LDA 01
-MAP FF
 #Making Sprite
 LDA 18
 MAP F9
-LDA 00
-MAP FD
+#LDA 00
+#MAP FD
 LDA 04
 MAP FF
 #LOOP
@@ -93,44 +75,12 @@ MVR 02
 MPA 05
 MVR 03
 #MLT
-#XFRAC
-MPA 00
-MLT 02
-MVA 07 ;Decimal shifts so that overflow is correct.
-MVR 02
-#XINT
-MPA 00
-MLT 00
-MVA 00
-ADD 02
-MVA 04
-SAL 07 ;get the carry.
-SAR 07
-MAP 20
-MVA 07
-MVR 00
-MPA 20
-ADD 00
-#YFRAC
-MPA 01
-MLT 03
-MVA 07 ;Decimal shifts so that overflow is correct.
-MVR 03
-#YINT
-MPA 01
-MLT 01
-MVA 01
-ADD 03
-MVA 04
-SAL 07 ;get the carry.
-SAR 07
-MAP 20
-MVA 07
-MVR 01
-MPA 20
-ADD 01
+LDA afttrig1
+MAP 30
+JUP mtrig
+afttrig1:
 #SUBTR
-MVA 03
+MPA 31
 SUB 02
 MVA 04
 SAR 07
@@ -149,10 +99,76 @@ MAP 06
 MVA 02
 MAP 07
 #2 (too large it's impossible.) I must use 8 bit.
+MPA 03
+MVR 00
+MPA 02
+MVR 01
+MPA 05
+MVR 02
+MPA 04
+MVR 03
+LDA afttrig2
+MAP 30
+JUP mtrig
+afttrig2:
+MPA 31
+ADD 02
+MVA 04
+SAL 07
+SAR 07
+ADD 00
+MVA 01
+ADD 00
+MVA 00
+MAP 03
+MVA 02
+MAP 05
 #Commit
 MPA 06
 MAP 02
 MPA 07
 MAP 04
 JUP rotlop
-HLT
+mtrig:
+#XFRAC
+LDA COS
+MLT 02
+MVA 07 ;Decimal shifts so that overflow is correct.
+MVR 02
+#XINT
+LDA COS
+MLT 00
+MVA 00
+ADD 02
+MVA 04
+SAL 07 ;get the carry.
+SAR 07
+MAP 20
+MVA 07
+MVR 00
+MPA 20
+ADD 00
+#YFRAC
+LDA SIN
+MLT 03
+MVA 07 ;Decimal shifts so that overflow is correct.
+MVR 03
+#YINT
+LDA SIN
+MLT 01
+MVA 01
+ADD 03
+MVA 04
+SAL 07 ;get the carry.
+SAR 07
+MAP 20
+MVA 07
+MVR 01
+MPA 20
+ADD 01
+#Return
+MVA 03
+MAP 31
+MPA 30
+MVR 03
+JPP 03
