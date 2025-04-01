@@ -17,6 +17,7 @@
 #31: Val
 #40: Ret2
 #I tried to functionize the entire multiplication "pipeline", register movement + other overheads takes too much.
+#Q8.8 further neccessary due to it's small "computation" size. Other formats are very shift-heavy and it'll bloat the rom
 COS = FF
 SIN = 04
 #LDA 00 ;X
@@ -26,7 +27,9 @@ MAP 03
 #Setup BACK
 #LDA 5F
 #MAP FA
-LDA 40
+LDA 01
+MAP FF
+LDA C0
 MAP FB
 #Making Sprite
 LDA 18
@@ -63,8 +66,8 @@ MAP FE
 #UPDATE
 LDA 05
 MAP FF
-LDA 01
-MAP FF
+#LDA 01
+#MAP FF
 #ROTATE (The hard part) could be infeasable for caster due to size constraints
 MPA 02
 MVR 00
@@ -80,21 +83,18 @@ MAP 30
 JUP mtrig
 afttrig1:
 #SUBTR
-MPA 31
+MPA 31 ;Get the 3rd reg
 SUB 02
 MVA 04
-SAR 07
 SAL 07
-JZO neg
+SAR 07
+JPG pos
 INC 01
-neg:
+pos:
 MVA 01
 SUB 00
 MVA 00
-JGE ncorr
-INC 00
-ncorr:
-MVA 00
+#Only for two's complement mb
 MAP 06
 MVA 02
 MAP 07
@@ -107,10 +107,18 @@ MPA 05
 MVR 02
 MPA 04
 MVR 03
+#the really small calculation is messing it up
+#However, I can't correct it using a double negation due to size constraints (again)
 LDA afttrig2
 MAP 30
 JUP mtrig
 afttrig2:
+MVA 01 ;I get this was cheating but HEAR ME OUT IT WORKS ALRIGHT!?
+SAR 1 ;Calc using 8-(4+3) (3 is the bit# of 4)
+JZO skpfix
+LDA FC ;Calc using !(FFFF >> 7) 
+IOR 01
+skpfix:
 MPA 31
 ADD 02
 MVA 04
@@ -119,11 +127,11 @@ SAR 07
 ADD 00
 MVA 01
 ADD 00
+#Commit
 MVA 00
 MAP 03
 MVA 02
 MAP 05
-#Commit
 MPA 06
 MAP 02
 MPA 07
@@ -149,9 +157,10 @@ MVR 00
 MPA 20
 ADD 00
 #YFRAC
-LDA SIN
-MLT 03
-MVA 07 ;Decimal shifts so that overflow is correct.
+#LDA SIN
+#*4 is basically sal 2 so sar 8-2
+MVA 03
+SAR 6
 MVR 03
 #YINT
 LDA SIN
