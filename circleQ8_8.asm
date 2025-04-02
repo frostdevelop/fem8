@@ -20,6 +20,10 @@
 #Q8.8 further neccessary due to it's small "computation" size. Other formats are very shift-heavy and it'll bloat the rom
 COS = FF
 SIN = 04
+#Calc using !(FFFF >> (4 + bit# of SIN))
+FSIN = FC
+RAD = 6
+CENT = 88
 #LDA 00 ;X
 #MAP 02
 LDA 01 ;Y
@@ -36,8 +40,9 @@ LDA 18
 MAP F9
 #LDA 00
 #MAP FD
-LDA 04
-MAP FF
+#LDA 04
+#MAP FF
+#INIT FULLY COMPRESSED
 #LOOP
 rotlop:
 MPA 02
@@ -48,12 +53,24 @@ MPA 04
 MVR 02
 MPA 05
 MVR 03
-LDA 06
+#Up
+LDA RAD
 MLT 00
 MLT 01
-LDA 08
+#MVA 00
+#MAP 50
+#MVA 01
+#MAP 51
+MLT 02
+MVA 07
 ADD 00
+LDA RAD
+MLT 03
+MVA 07
 ADD 01
+#LDA CENT
+#ADD 00
+#ADD 01
 MVA 00
 SAL 04
 MVR 00
@@ -61,14 +78,16 @@ MVA 01
 SAL 04
 SAR 04
 IOR 00
+LDA CENT
+ADD 00
 MVA 00
 MAP FE
 #UPDATE
-LDA 05
+LDA 04
 MAP FF
 #LDA 01
 #MAP FF
-#ROTATE (The hard part) could be infeasable for caster due to size constraints
+#ROTATE (The hard part) could be infeasable for caster due to size constraints Above fully optimized
 MPA 02
 MVR 00
 MPA 03
@@ -79,26 +98,23 @@ MPA 05
 MVR 03
 #MLT
 LDA afttrig1
-MAP 30
 JUP mtrig
 afttrig1:
 #SUBTR
-MPA 31 ;Get the 3rd reg
 SUB 02
 MVA 04
 SAL 07
-SAR 07
-JPG pos
+#MVA 02
+JNZ pos
 INC 01
 pos:
 MVA 01
 SUB 00
 MVA 00
-#Only for two's complement mb
 MAP 06
 MVA 02
 MAP 07
-#2 (too large it's impossible.) I must use 8 bit.
+#Calc Y
 MPA 03
 MVR 00
 MPA 02
@@ -110,21 +126,21 @@ MVR 03
 #the really small calculation is messing it up
 #However, I can't correct it using a double negation due to size constraints (again)
 LDA afttrig2
-MAP 30
 JUP mtrig
 afttrig2:
-MVA 01 ;I get this was cheating but HEAR ME OUT IT WORKS ALRIGHT!?
-SAR 1 ;Calc using 8-(4+3) (3 is the bit# of 4)
-JZO skpfix
-LDA FC ;Calc using !(FFFF >> 7) 
-IOR 01
-skpfix:
-MPA 31
 ADD 02
 MVA 04
 SAL 07
 SAR 07
 ADD 00
+#Negate Correct
+#MVA 01 ;I get this was cheating but HEAR ME OUT IT WORKS ALRIGHT!?
+#SAR 1 ;Calc using 8-(4+3) (3 is the bit# of 4)
+MPA 02
+JGE skpfix
+LDA FSIN ;Calc using !(FFFF >> 7) 
+IOR 01
+skpfix:
 MVA 01
 ADD 00
 #Commit
@@ -137,8 +153,10 @@ MAP 02
 MPA 07
 MAP 04
 JUP rotlop
+#Everything above has been thoroughly optimized.
 mtrig:
 #XFRAC
+MAP 30
 LDA COS
 MLT 02
 MVA 07 ;Decimal shifts so that overflow is correct.
@@ -166,12 +184,14 @@ MVR 03
 LDA SIN
 MLT 01
 MVA 01
+#SAL 02
 ADD 03
 MVA 04
 SAL 07 ;get the carry.
 SAR 07
 MAP 20
 MVA 07
+#SAR 6
 MVR 01
 MPA 20
 ADD 01
@@ -180,4 +200,5 @@ MVA 03
 MAP 31
 MPA 30
 MVR 03
+MPA 31
 JPP 03
