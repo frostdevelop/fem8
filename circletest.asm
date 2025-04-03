@@ -27,13 +27,9 @@ MAP 03
 #LOOP
 rotlop:
 #ROTATE (The hard part) could be infeasable for caster due to size constraints
-MPA 02
-MVR 00
-MPA 03
-MVR 01
-MPA 04
-MVR 02
-MPA 05
+LDA aftinit1
+JUP initt
+aftinit1:
 MVR 03
 
 LDA 'a'
@@ -47,13 +43,19 @@ LDA afttrig1
 JUP mtrig
 afttrig1:
 #SUBTR
-SUB 02
+SUB 02 ;Might've found a hardware glitch here...
+#OH SHOTO I FORGOT THR FLAG REGISTER
+#LDA 62 ;Change this to 62 and the algorithm fails...
 MVA 04
 SAL 07
-#MVA 02
 JNZ pos
+#MPA 02
+#JPL pos
 INC 01
 pos:
+MPA 02
+SAR 7
+ADD 0
 MVA 01
 SUB 00
 MVA 00
@@ -115,10 +117,8 @@ ADD 02
 MVA 04
 SAL 07 ;get the carry.
 SAR 07
-MAP 20
-MVA 07
 MVR 00
-MPA 20
+MVA 07
 ADD 00
 #YFRAC
 #LDA SIN
@@ -130,16 +130,12 @@ MVR 03
 LDA SIN
 MLT 01
 MVA 01
-#SAL 02
 ADD 03
 MVA 04
 SAL 07 ;get the carry.
 SAR 07
-MAP 20
-MVA 07
-#SAR 6
 MVR 01
-MPA 20
+MVA 07
 ADD 01
 #Return
 MVA 03
@@ -147,4 +143,14 @@ MAP 31
 MPA 30
 MVR 03
 MPA 31
+JPP 03
+initt:
+MVR 03
+MPA 02
+MVR 00
+MPA 03
+MVR 01
+MPA 04
+MVR 02
+MPA 05
 JPP 03
